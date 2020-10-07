@@ -12,6 +12,11 @@
   },
   "author": "kotodu",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kotodu/illustrator-Path-Join.git"
+  },
+  "homepage": "https://github.com/kotodu/illustrator-Path-Join#readme",
   "devDependencies": {
     "types-for-adobe": "^6.0.1"
   }
