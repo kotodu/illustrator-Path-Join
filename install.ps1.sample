@@ -1,7 +1,7 @@
 # フォルダの場所
 $EXMANCMD="C:/Users/YourName/Documents/ExManCmd_win/ExManCmd.exe"
-$ExtensionBundleId="io.kotodu.ilo"
-$ZXPFILE="C:/Users/YourName/Documents/GitHub/illustrator-Path-Join/dist/ilo.zxp"
+$ExtensionBundleId="io.kotodu.ipj"
+$ZXPFILE="C:/Users/YourName/Documents/GitHub/illustrator-Path-Join/dist/ipj.zxp"
 
 # パッケージ・署名
 Start-Process -FilePath $EXMANCMD -ArgumentList "/install $ZXPFILE" -Wait -Verb runas

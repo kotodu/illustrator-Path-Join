@@ -1,7 +1,7 @@
 $SIGNCMD="C:/Users/YourName/Documents/ZXPSignCmd"
 $SRCDIR="C:/Users/YourName/Documents/GitHub/illustrator-Path-Join/src"
 $SIGFILE="C:/Users/YourName/Documents/sign.p12"
-$ZXPFILE="C:/Users/YourName/Documents/GitHub/illustrator-Path-Join/dist/ilo.zxp"
+$ZXPFILE="C:/Users/YourName/Documents/GitHub/illustrator-Path-Join/dist/ipj.zxp"
 $PW="kotorailway"
 
 # ZXPを事前に削除
