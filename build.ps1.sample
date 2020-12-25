@@ -1,4 +1,4 @@
-$SIGNCMD="C:/Users/YourName/Documents/ZXPSignCmd"
+$SIGNCMD="C:/Users/YourName/Documents/ZXPSignCmd.exe"
 $SRCDIR="C:/Users/YourName/Documents/GitHub/illustrator-Path-Join/src"
 $SIGFILE="C:/Users/YourName/Documents/sign.p12"
 $ZXPFILE="C:/Users/YourName/Documents/GitHub/illustrator-Path-Join/dist/ipj.zxp"
