@@ -10,6 +10,7 @@
  * 「crossPoint」交点算出
  * @param {number} x1 
  * @param {number} y1 
+ * 
  * @param {number} x2 
  * @param {number} y2 
  * @param {number} x3 
@@ -160,7 +161,22 @@ function decideCrossPoint(path: [PathItem, PathItem]): [number, number] {
     return cp;
 }
 
-
+/**
+ * @method addLog ログ追加メソッド
+ * @param {string} info 
+ * @param {string} value
+ * @param {string} logText
+ * @returns {string} 出力テキスト 
+ */
+function addLog(info: string, value: string, logText: string): string {
+    // TODO : もう少しログを簡易的に記載させたい
+    return logText.concat(
+        "\n",
+        info,
+        "\n",
+        value
+    );
+}
 
 //---------------------------------------------
 // スタート時の処理
@@ -169,6 +185,11 @@ function decideCrossPoint(path: [PathItem, PathItem]): [number, number] {
  * @method generate スタート時に実行されるエントリーポイント
  */
 function generate() {
+    /**
+     * @var {string} log 出力用簡易文字列
+     */
+    let log = "";
+
     // @ts-ignore
     // type-for-adobeでは対応していないプロパティの模様
     const selections: any[] | null = app.activeDocument.selection;
@@ -176,11 +197,13 @@ function generate() {
     // nullの場合は戻す
     // 気持ち悪いけどこれが楽
     if (selections === null) {
-        // logLines.push("no-selection!")
-        return "null"
+        return addLog(
+            "----------ERROR----------",
+            "選択が無い",
+            log
+        );
     }
 
-    let log = "";
     try {
 
         // 型変換周りでエラーを吐く(それはそう)が、今回は無視
@@ -197,7 +220,11 @@ function generate() {
         // pathItemが2個ではないなら戻す
         // 将来的には仕様を変更するかもしれない
         if (paths.length !== 2) {
-            return "パスが2個ではない";
+            return addLog(
+                "----------ERROR----------",
+                "パスが2個ではない",
+                log
+            );
         }
 
         // pathPointで1点か点なしはさすがにNG
@@ -205,7 +232,11 @@ function generate() {
             paths[0].pathPoints.length < 2
             && paths[1].pathPoints.length < 2
         ) {
-            return "1点か点なし";
+            return addLog(
+                "----------ERROR----------",
+                "1点か点なし",
+                log
+            );
         }
         const crossPoint: [number, number] = decideCrossPoint([
             paths[0],
@@ -218,7 +249,7 @@ function generate() {
 
         let setPoints: [number, number][] = [];
         const path1Points = paths[1].pathPoints;
-        for (let i = 0; i < path1Points.length; i++){
+        for (let i = 0; i < path1Points.length; i++) {
             const point = path1Points[i];
             setPoints.push([
                 point.anchor[0],
@@ -231,28 +262,21 @@ function generate() {
 
         newPath.setEntirePath(setPoints);
 
-        log = log
-            + "\n"
-            + "crosspoint:"
-            + crossPoint.toString()
-            + "\n"
-            + "pathPoints0:"
-            + newPath.pathPoints[0].anchor[0].toString()
-            + ","
-            + newPath.pathPoints[0].anchor[1].toString()
-            + "\n"
-            + "pathPointsLength:"
-            + newPath.pathPoints.length
-
+        log = addLog(
+            "★crosspoint",
+            crossPoint.toString(),
+            log
+        );
     } catch (error) {
-        log = log
-            + "\n"
-            + "エラー終了 : "
-            + error;
+        log = addLog(
+            "----------ERROR----------",
+            error,
+            log
+        );
     }
-    return log.concat(
-        "\n",
-        "終了 : ",
-        new Date().toLocaleTimeString()
+    return addLog(
+        "----------正常終了----------",
+        new Date().toLocaleTimeString(),
+        log
     );
 }
