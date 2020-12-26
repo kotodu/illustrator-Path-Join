@@ -1,9 +1,52 @@
 /// <reference types="types-for-adobe/Illustrator/2015.3"/>
 
-import { crossPoint } from "./components/crosspoint";
+// import { crossPoint } from "./components/crosspoint";
 // 端の組み合わせ4点のうち、距離の近い2点で算出
 // 距離を返す
 
+// 線分AB,CDのペアA(x1,y1),B(x2,y2),C(x3,y3),D(x4,y4)
+// P1,P2,P3で、P1P2とP2P3を仮オフセットした線分AB,CDからその交点を算出したい
+/**
+ * 「crossPoint」交点算出
+ * @param {number} x1 
+ * @param {number} y1 
+ * @param {number} x2 
+ * @param {number} y2 
+ * @param {number} x3 
+ * @param {number} y3 
+ * @param {number} x4 
+ * @param {number} y4 
+ * @return {[number,number]} [x,y] 交点のPathItem
+ */
+function crossPoint(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    x3: number,
+    y3: number,
+    x4: number,
+    y4: number): [number, number] {
+    const vy1 = y2 - y1;
+    const vx1 = x1 - x2;
+    const c_1 = -1 * vy1 * x1 - vx1 * y1;
+    const vy2 = y4 - y3;
+    const vx2 = x3 - x4;
+    const c_2 = -1 * vy2 * x3 - vx2 * y3;
+
+    const c_3 = vx1 * vy2 - vx2 * vy1;
+    if (c_3 === 0) { //平行によりうまく求められないとき。
+        return [
+            (x2 + x3) * 0.5,
+            (y2 + y3) * 0.5
+        ];
+    } else {
+        return [
+            (c_1 * vx2 - c_2 * vx1) / c_3,
+            (vy1 * c_2 - vy2 * c_1) / c_3
+        ];
+    }
+}
 
 
 //---------------------------------------------
@@ -15,7 +58,7 @@ import { crossPoint } from "./components/crosspoint";
  * @param y2 
  * @returns {number}
  */
-function diffPoints(x1: number, y1: number, x2: number, y2: number):number {
+function diffPoints(x1: number, y1: number, x2: number, y2: number): number {
     const diffX = Math.abs(x2 - x1);
     const diffY = Math.abs(y2 - y1);
     return Math.sqrt(diffX * diffX + diffY * diffY);
@@ -60,13 +103,13 @@ function decideCrossPoint(path: [PathItem, PathItem]): [number, number] {
     let cps: [number, number][] = [];
 
     // 引数のpathのどちらか＋anchor番号
-    let anchorIndexs: [number,number][]= [];
+    let anchorIndexs: [number, number][] = [];
 
     // cpsの組み合わせの場合の、2点間距離差
     // 最も小さいものを採用する
     let diffs: number[] = [];
-    for (let i = 0; i < 2; i++){
-        for (let j = 2; j < 4; j++){
+    for (let i = 0; i < 2; i++) {
+        for (let j = 2; j < 4; j++) {
             cps.push(crossPoint(
                 pathPoints[i].anchor[0],
                 pathPoints[i].anchor[1],
@@ -83,7 +126,7 @@ function decideCrossPoint(path: [PathItem, PathItem]): [number, number] {
                 pathPoints[j].anchor[0],
                 pathPoints[j].anchor[1]
             ));
-            const isFirstAnchor = (num:number) => {
+            const isFirstAnchor = (num: number) => {
                 return num % 2 === 0;
             }
             // 最初のアンカーなら0、そうでなければ長さの1つ前
@@ -98,7 +141,7 @@ function decideCrossPoint(path: [PathItem, PathItem]): [number, number] {
     // 最小値を持つdiffのindexを出す
     let minDiff = diffs[0];
     let minDiffIndex = 0;
-    for (let i = 0; i < diffs.length; i++){
+    for (let i = 0; i < diffs.length; i++) {
         const diff = diffs[i];
         if (diff < minDiff) {
             minDiff = diff;
@@ -122,7 +165,9 @@ function decideCrossPoint(path: [PathItem, PathItem]): [number, number] {
 //---------------------------------------------
 // スタート時の処理
 //---------------------------------------------
-
+/**
+ * @method generate スタート時に実行されるエントリーポイント
+ */
 function generate() {
     // @ts-ignore
     // type-for-adobeでは対応していないプロパティの模様
@@ -130,46 +175,84 @@ function generate() {
 
     // nullの場合は戻す
     // 気持ち悪いけどこれが楽
-    if (selections == null) {
+    if (selections === null) {
         // logLines.push("no-selection!")
-        return
+        return "null"
     }
 
-    // 型変換周りでエラーを吐く(それはそう)が、今回は無視
-    // filterはうまく変換されないので使えない……なんで？
-    let paths: PathItem[] = [];
-    for (const obj of selections) {
-        if (obj.typename == "PathItem") {
+    let log = "";
+    try {
 
-            // pathItemとみなして追加する
-            paths.push(obj as PathItem);
+        // 型変換周りでエラーを吐く(それはそう)が、今回は無視
+        // filterはうまく変換されないので使えない……なんで？
+        let paths: PathItem[] = [];
+        for (const obj of selections) {
+            if (obj.typename == "PathItem") {
+
+                // pathItemとみなして追加する
+                paths.push(obj as PathItem);
+            }
         }
-    }
 
-    // pathItemが2個ではないなら戻す
-    // 将来的には仕様を変更するかもしれない
-    if (paths.length !== 2) {
-        return
-    }
+        // pathItemが2個ではないなら戻す
+        // 将来的には仕様を変更するかもしれない
+        if (paths.length !== 2) {
+            return "パスが2個ではない";
+        }
 
-    // pathPointで1点か点なしはさすがにNG
-    if (paths[0].pathPoints.length < 2 && 
-        paths[1].pathPoints.length < 2) {
-        return
+        // pathPointで1点か点なしはさすがにNG
+        if (
+            paths[0].pathPoints.length < 2
+            && paths[1].pathPoints.length < 2
+        ) {
+            return "1点か点なし";
+        }
+        const crossPoint: [number, number] = decideCrossPoint([
+            paths[0],
+            paths[1]
+        ]);
+        //@ts-ignore
+        // type-for-adobe非対応
+        const newPath: PathItem = paths[1].duplicate();
+        newPath.stroked = true;
+
+        let setPoints: [number, number][] = [];
+        const path1Points = paths[1].pathPoints;
+        for (let i = 0; i < path1Points.length; i++){
+            const point = path1Points[i];
+            setPoints.push([
+                point.anchor[0],
+                point.anchor[1]
+            ]);
+        }
+        setPoints.push(crossPoint);
+
+        // 交点1つのみの線を生成する
+
+        newPath.setEntirePath(setPoints);
+
+        log = log
+            + "\n"
+            + "crosspoint:"
+            + crossPoint.toString()
+            + "\n"
+            + "pathPoints0:"
+            + newPath.pathPoints[0].anchor[0].toString()
+            + ","
+            + newPath.pathPoints[0].anchor[1].toString()
+            + "\n"
+            + "pathPointsLength:"
+            + newPath.pathPoints.length
+
+    } catch (error) {
+        log = log
+            + "\n"
+            + "エラー終了 : "
+            + error;
     }
-    const crossPoint :[number,number]= decideCrossPoint([
-        paths[0],
-        paths[1]]
+    return log.concat(
+        "\n",
+        "終了 : ",
+        new Date().toLocaleTimeString()
     );
-    //@ts-ignore
-    // type-for-adobe非対応
-    const newPath: PathItem = paths[1].duplicate();
-    newPath.stroked = true;
-    // 交点1つのみの線を生成する
-    newPath.setEntirePath([crossPoint]);
-}
-
-function start() {
-    generate()
-    return "スタートしました";
 }

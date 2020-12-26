@@ -5,7 +5,7 @@ openButton.addEventListener("click", join);
 
 //---------------------------------------------
 function join() {
-    csi.evalScript("", (log) => {
-        console.log(log)
+    csi.evalScript("generate()", (log) => {
+        document.getElementById("ta").value = log;
     })
 }
