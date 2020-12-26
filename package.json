@@ -20,5 +20,8 @@
   "devDependencies": {
     "types-for-adobe": "^6.0.1",
     "typescript": "^4.1.3"
+  },
+  "prettier": {
+    "tabWidth": 4
   }
 }
