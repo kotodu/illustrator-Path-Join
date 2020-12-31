@@ -7,10 +7,9 @@
 // 線分AB,CDのペアA(x1,y1),B(x2,y2),C(x3,y3),D(x4,y4)
 // P1,P2,P3で、P1P2とP2P3を仮オフセットした線分AB,CDからその交点を算出したい
 /**
- * 「crossPoint」交点算出
+ * @method「crossPoint」交点算出
  * @param {number} x1
  * @param {number} y1
- *
  * @param {number} x2
  * @param {number} y2
  * @param {number} x3
@@ -47,12 +46,12 @@ function crossPoint(
 
 //---------------------------------------------
 /**
- * @summary 2点間の距離を返す
- * @param x1
- * @param y1
- * @param x2
- * @param y2
- * @returns {number}
+ * @method 2点間の距離を返す
+ * @param {number} x1
+ * @param {number} y1
+ * @param {number} x2
+ * @param {number} y2
+ * @returns {number} 距離
  */
 function diffPoints(x1: number, y1: number, x2: number, y2: number): number {
     const diffX = Math.abs(x2 - x1);
@@ -61,8 +60,8 @@ function diffPoints(x1: number, y1: number, x2: number, y2: number): number {
 }
 
 /**
- * @method
- * @param {[number, number]} cp
+ * @method isCrossPointOnLine 指定の点が2点間上にあるかどうか返す
+ * @param {[number, number]} cp 指定の点(交点)
  * @param {[PathPoint, PathPoint]} end 線端
  * @returns {boolean} 線端上に交点があるか(falseなら延長上にある)
  */
@@ -93,103 +92,186 @@ function isCrossPointOnLine(
 }
 
 /**
- * パス2つを元に、交点を決定する
- * @param path
+ * @method getLineEnds 線端を算出する
+ * @param path1
+ * @param path2
+ * @returns
  */
-function decideCrossPoint(
-    path: [PathItem, PathItem]
-): {
-    cp: [number, number];
-    points: [number, number][];
-} {
-    // TODO : この際、交点が始点-始点の次などにあるかも判定したい
-    // パスそれぞれの始点・終点、始点の次・終点の1つ前を収集する
-    const path1: PathItem = path[0];
+function getLineEnds(
+    path1: PathItem,
+    path2: PathItem
+): [PathPoint, PathPoint][] {
     const pi1length: number = path1.pathPoints.length;
-    const path2: PathItem = path[1];
     const pi2length: number = path2.pathPoints.length;
+
+    // 始点・終点とその1つ隣が線端
     const p1: PathPoint = path1.pathPoints[0];
     const p2: PathPoint = path1.pathPoints[pi1length - 1];
     const p3: PathPoint = path2.pathPoints[0];
     const p4: PathPoint = path2.pathPoints[pi2length - 1];
-    const pathPoints: [PathPoint, PathPoint, PathPoint, PathPoint] = [
-        p1,
-        p2,
-        p3,
-        p4,
-    ];
     const p1next: PathPoint = path1.pathPoints[1];
     const p2next: PathPoint = path1.pathPoints[pi1length - 2];
     const p3next: PathPoint = path2.pathPoints[1];
     const p4next: PathPoint = path2.pathPoints[pi2length - 2];
-    const pathPointsNext: [PathPoint, PathPoint, PathPoint, PathPoint] = [
-        p1next,
-        p2next,
-        p3next,
-        p4next,
-    ];
-    //---------------------------------------------
-    // 最も距離差の少ない端2点の組み合わせを選択
-    // 交点をひとまずひたすら繋いでいく
-    // 交点だけでなく、path2つのどちらか・anchorとの対応情報、距離差も算出する
 
-    // 交点
-    let cps: [number, number][] = [];
-
-    // 引数のpathのどちらか＋anchor番号
-    let anchorTypes: [boolean, boolean][] = [];
-
-    // cpsの組み合わせの場合の、2点間距離差
-    // 最も小さいものを採用する
-    let diffs: number[] = [];
-
+    // 始点・終点とその1つ隣が線端
     const p1_p1next: [PathPoint, PathPoint] = [p1, p1next];
     const p2_p2next: [PathPoint, PathPoint] = [p2, p2next];
     const p3_p3next: [PathPoint, PathPoint] = [p3, p3next];
     const p4_p4next: [PathPoint, PathPoint] = [p4, p4next];
+
+    // 線端
     const lineEnds: [PathPoint, PathPoint][] = [
         p1_p1next,
         p2_p2next,
         p3_p3next,
         p4_p4next,
     ];
+    return lineEnds;
+}
 
-    // 線端4つの組み合わせ6通りのオブジェクトを格納する
-    let lineEndPairs: [[PathPoint, PathPoint], [PathPoint, PathPoint]][] = [];
+function reverse(array: Array<any>): Array<any> {
+    let newArray = [];
+    for (let i = array.length - 1; i >= 0; i--) {
+        newArray.push(array[i]);
+    }
+    return newArray;
+}
 
-    // 各組み合わせ方でそれぞれ処理を行う
-    for (let i = 0; i < 2; i++) {
-        for (let j = 2; j < 4; j++) {
-            // 組み合わせパターンを格納していく
-            lineEndPairs.push([lineEnds[i], lineEnds[j]]);
-            cps.push(
-                crossPoint(
-                    pathPoints[i].anchor[0],
-                    pathPoints[i].anchor[1],
-                    pathPointsNext[i].anchor[0],
-                    pathPointsNext[i].anchor[1],
-                    pathPoints[j].anchor[0],
-                    pathPoints[j].anchor[1],
-                    pathPointsNext[j].anchor[0],
-                    pathPointsNext[j].anchor[1]
-                )
-            );
-            diffs.push(
-                diffPoints(
-                    pathPoints[i].anchor[0],
-                    pathPoints[i].anchor[1],
-                    pathPoints[j].anchor[0],
-                    pathPoints[j].anchor[1]
-                )
-            );
-            const isFirstAnchor = (num: number) => {
-                return num % 2 === 0;
-            };
-            // 最初のアンカーなら0、そうでなければ長さの1つ前
-            // 使用する線端は点配列のどの位置にあるか
-            anchorTypes.push([isFirstAnchor(i), isFirstAnchor(j)]);
+/**
+ * @method getLineEnd 要素indexをもとに線端を取得する
+ * @param path
+ * @param endIndex
+ */
+function getLineEnd(path: PathItem, endIndex: number) {
+    // endIndexが0なら0と1、そうでなければindex-1とindex
+    if (endIndex === 0) {
+        return [path.pathPoints[0], path.pathPoints[1]];
+    } else {
+        return [path.pathPoints[endIndex - 1], path.pathPoints[endIndex]];
+    }
+}
+
+function getNextPoint(pathPoints: PathPoint[], endIndex: number): PathPoint {
+    if (endIndex === 0) {
+        return pathPoints[1];
+    } else {
+        return pathPoints[endIndex - 1];
+    }
+}
+
+/**
+ * パス2つを元に、交点を決定する
+ * @param path
+ */
+function decideCrossPoint(
+    path: [PathItem, PathItem],
+    log: string
+): {
+    cp: [number, number];
+    points: [number, number][];
+    log: string;
+} {
+    // 4パターンの結合方法[path1結合位置、path2結合位置]
+    const joinIndexOptions = [
+        [0, 0],
+        [0, path[1].pathPoints.length - 1],
+        [path[0].pathPoints.length - 1, 0],
+        [path[0].pathPoints.length - 1, path[1].pathPoints.length - 1],
+    ];
+
+    // 結合方法ごとに、交点、線端間距離、線端上に交点がくるか、その際のアンカー配列を作成
+    // 最も線端間距離の短い場合のアンカー配列を採用する
+
+    let cps: [number, number][] = [];
+    let diffs: number[] = [];
+    let anchors: [number, number][][] = [];
+
+    for (let i = 0; i < joinIndexOptions.length; i++) {
+        anchors.push([]);
+        const joinIndexPath1 = joinIndexOptions[i][0];
+        const joinPointPath1 = path[0].pathPoints[joinIndexPath1];
+        const joinIndexPath2 = joinIndexOptions[i][1];
+        const joinPointPath2 = path[1].pathPoints[joinIndexPath2];
+        // 線端間距離の算出
+        const diff = diffPoints(
+            joinPointPath1.anchor[0],
+            joinPointPath1.anchor[1],
+            joinPointPath2.anchor[0],
+            joinPointPath2.anchor[1]
+        );
+        diffs.push(diff);
+        log = addLog("★diff", diff.toString(), log);
+
+        // 交点の算出
+        const endNextPath1 = getNextPoint(path[0].pathPoints, joinIndexPath1);
+        const endNextPath2 = getNextPoint(path[1].pathPoints, joinIndexPath2);
+        const cp = crossPoint(
+            joinPointPath1.anchor[0],
+            joinPointPath1.anchor[1],
+            endNextPath1.anchor[0],
+            endNextPath1.anchor[1],
+            joinPointPath2.anchor[0],
+            joinPointPath2.anchor[1],
+            endNextPath2.anchor[0],
+            endNextPath2.anchor[1]
+        );
+        cps.push(cp);
+        log = addLog("★cp", cp.toString(), log);
+
+        // 線端上にあるか
+        const cpOnPath1 = isCrossPointOnLine(cp, [
+            joinPointPath1,
+            endNextPath1,
+        ]);
+        const cpOnPath2 = isCrossPointOnLine(cp, [
+            joinPointPath2,
+            endNextPath2,
+        ]);
+        log = addLog("★onPath1", cpOnPath1.toString(), log);
+        log = addLog("★onPath2", cpOnPath2.toString(), log);
+
+        // 線端上にある場合、線端を削除する
+        // path1→path2となるよう必要ならアンカー配列を反転
+        let slicedPath1Points: PathPoint[] = [];
+        for (let j = 0; j < path[0].pathPoints.length; j++) {
+            const pathPoint = path[0].pathPoints[j];
+            if (!cpOnPath1 || joinIndexPath1 !== j) {
+                slicedPath1Points.push(pathPoint);
+            }
+        }
+        let slicedPath2Points: PathPoint[] = [];
+        for (let j = 0; j < path[1].pathPoints.length; j++) {
+            const pathPoint = path[1].pathPoints[j];
+            if (!cpOnPath2 || joinIndexPath2 !== j) {
+                slicedPath2Points.push(pathPoint);
+            }
+        }
+        let reversedPath1Points: PathPoint[] = [];
+        if (joinIndexPath1 !== 0) {
+            reversedPath1Points = slicedPath1Points;
+        } else {
+            reversedPath1Points = reverse(slicedPath1Points);
+        }
+        let reversedPath2Points: PathPoint[] = [];
+        if (joinIndexPath2 === 0) {
+            reversedPath2Points = slicedPath2Points;
+        } else {
+            reversedPath2Points = reverse(slicedPath2Points);
+        }
+
+        // 格納
+        for (let j = 0; j < reversedPath1Points.length; j++) {
+            const point = reversedPath1Points[j];
+            anchors[i].push([point.anchor[0], point.anchor[1]]);
+        }
+        anchors[i].push(cp);
+        for (let j = 0; j < reversedPath2Points.length; j++) {
+            const point = reversedPath2Points[j];
+            anchors[i].push([point.anchor[0], point.anchor[1]]);
         }
     }
+
     // あまり好ましくないコード……
     // 最小値を持つdiffのindexを出す
     let minDiff = diffs[0];
@@ -203,79 +285,12 @@ function decideCrossPoint(
     }
     // 交点、組み合わせる線端、その際使用する線端は点配列のどの位置にあるかの最終決定
     const cp = cps[minDiffIndex];
-    const endPair = lineEndPairs[minDiffIndex];
-    const anchorType = anchorTypes[minDiffIndex];
+    const points = anchors[minDiffIndex];
 
-    // ! : ここで切り出し処理を行うが、順序・交点と線端の関係に注意
-    // ! : 線上にある場合は、終端を交点とみなす
-
-    // 交点と、交点の際の線端組み合わせから、交点が線上にあるか判定
-    const pair1OnLine = isCrossPointOnLine(cp, endPair[0]);
-    const pair2OnLine = isCrossPointOnLine(cp, endPair[1]);
-
-    // 線端上にある:始点または終点を交点に置換し結合
-    //     (共通で交点を追加するので、置換すべき点を削除すれば良い)
-    // 線誕上にない:交点を追加し結合
-    // (交点が始点または終点のどちらにくるかも参考に)
-    const p1replaceAnchorIndex = anchorType[0] ? 0 : pi1length - 1;
-    const p2replaceAnchorIndex = anchorType[1] ? 0 : pi2length - 1;
-
-    // path1
-    let cpFixedPath1Points: [number, number][] = [];
-    for (let i = 0; i < path1.pathPoints.length; i++) {
-        const point = path1.pathPoints[i];
-
-        // 交点に代替するかどうか
-        const replace2cp = i === p1replaceAnchorIndex && pair1OnLine;
-        if (!replace2cp) {
-            // 代替するごく一部をのぞき追加
-            cpFixedPath1Points.push([point.anchor[0], point.anchor[1]]);
-        }
-    }
-    // path2
-    let cpFixedPath2Points: [number, number][] = [];
-    for (let i = 0; i < path2.pathPoints.length; i++) {
-        const point = path2.pathPoints[i];
-
-        // 交点に代替するかどうか
-        const replace2cp = i === p2replaceAnchorIndex && pair2OnLine;
-        if (!replace2cp) {
-            // 代替するごく一部をのぞき追加
-            cpFixedPath2Points.push([point.anchor[0], point.anchor[1]]);
-        }
-    }
-
-    // 向きを修正しpath1+交点+path2の配列を作成する
-    // false,trueの状態にしたい(path1の終端,交点,path2の始端)
-    const vectorFixedPath1Points =
-        anchorType[0] === false
-            ? cpFixedPath1Points
-            : cpFixedPath1Points.reverse();
-    const vectorFixedPath2Points =
-        anchorType[1] === true
-            ? cpFixedPath2Points
-            : cpFixedPath2Points.reverse();
-
-    // 最後に点を格納する
-    let points: [number, number][] = [];
-    for (let i = 0; i < vectorFixedPath1Points.length; i++) {
-        points.push(vectorFixedPath1Points[i]);
-    }
-    points.push(cp);
-    for (let i = 0; i < vectorFixedPath2Points.length; i++) {
-        points.push(vectorFixedPath2Points[i]);
-    }
-
-    // その交点における[path1のアンカー番号,path2のアンカー番号]
-    // const cpAnchorIndexs = anchorIndexs[minDiffIndex];
-    //---------------------------------------------
-    // path1,path2を繋げたpathPointを作りたい
-    // ……と思ったけど、スクリプトで繋げるのは手間だし貧弱
-    // あえてユーザーに任せるのも手？
-    // 交点を返す
     return {
         cp: cp,
         points,
+        log,
     };
 }
 
@@ -291,7 +306,10 @@ function decideCrossPoint(
  */
 function addLog(info: string, value: string, logText: string): string {
     // TODO : もう少しログを簡易的に記載させたい
-    return logText.concat("\n", info, "\n", value);
+    // あえて参照に
+    var text = logText.concat("\n", info, "\n", value);
+    logText = text;
+    return text;
 }
 
 //---------------------------------------------
@@ -341,23 +359,18 @@ function generate() {
         if (paths[0].pathPoints.length < 2 && paths[1].pathPoints.length < 2) {
             return addLog("----------ERROR----------", "1点か点なし", log);
         }
+
         const crossPointResult: {
             cp: [number, number];
             points: [number, number][];
-        } = decideCrossPoint([paths[0], paths[1]]);
+            log: string;
+        } = decideCrossPoint([paths[0], paths[1]], log);
+        log = crossPointResult.log;
 
         //@ts-ignore
         // type-for-adobe非対応
         const newPath: PathItem = paths[1].duplicate();
         newPath.stroked = true;
-
-        // let setPoints: [number, number][] = [];
-        // const path1Points = paths[1].pathPoints;
-        // for (let i = 0; i < path1Points.length; i++) {
-        //     const point = path1Points[i];
-        //     setPoints.push([point.anchor[0], point.anchor[1]]);
-        // }
-        // setPoints.push(crossPointResult.cp);
 
         // 交点1つのみの線を生成する
 
@@ -373,3 +386,5 @@ function generate() {
         log
     );
 }
+// デバッグ用
+// generate();
