@@ -1,8 +1,11 @@
 /// <reference types="types-for-adobe/Illustrator/2015.3"/>
-
-// import { crossPoint } from "./components/crosspoint";
+/**
+ * @file 拡張機能に用いるillustratorスクリプト"illustrator-Path-Join"
+ * @author kotodu
+ * @description パスオブジェクト2つの交点を補完し、結合する
+ * @license MIT
+ */
 // 端の組み合わせ4点のうち、距離の近い2点で算出
-// 距離を返す
 
 // 線分AB,CDのペアA(x1,y1),B(x2,y2),C(x3,y3),D(x4,y4)
 // P1,P2,P3で、P1P2とP2P3を仮オフセットした線分AB,CDからその交点を算出したい
@@ -164,14 +167,7 @@ function getNextPoint(pathPoints: PathPoint[], endIndex: number): PathPoint {
  * パス2つを元に、交点を決定する
  * @param path
  */
-function decideCrossPoint(
-    path: [PathItem, PathItem],
-    log: string
-): {
-    cp: [number, number];
-    points: [number, number][];
-    log: string;
-} {
+function decideCrossPoint(path: [PathItem, PathItem]): [number, number][] {
     // 4パターンの結合方法[path1結合位置、path2結合位置]
     const joinIndexOptions = [
         [0, 0],
@@ -201,7 +197,6 @@ function decideCrossPoint(
             joinPointPath2.anchor[1]
         );
         diffs.push(diff);
-        log = addLog("★diff", diff.toString(), log);
 
         // 交点の算出
         const endNextPath1 = getNextPoint(path[0].pathPoints, joinIndexPath1);
@@ -217,7 +212,6 @@ function decideCrossPoint(
             endNextPath2.anchor[1]
         );
         cps.push(cp);
-        log = addLog("★cp", cp.toString(), log);
 
         // 線端上にあるか
         const cpOnPath1 = isCrossPointOnLine(cp, [
@@ -228,8 +222,6 @@ function decideCrossPoint(
             joinPointPath2,
             endNextPath2,
         ]);
-        log = addLog("★onPath1", cpOnPath1.toString(), log);
-        log = addLog("★onPath2", cpOnPath2.toString(), log);
 
         // 線端上にある場合、線端を削除する
         // path1→path2となるよう必要ならアンカー配列を反転
@@ -283,19 +275,15 @@ function decideCrossPoint(
             minDiffIndex = i;
         }
     }
-    // 交点、組み合わせる線端、その際使用する線端は点配列のどの位置にあるかの最終決定
-    const cp = cps[minDiffIndex];
-    const points = anchors[minDiffIndex];
 
-    return {
-        cp: cp,
-        points,
-        log,
-    };
+    // const cp = cps[minDiffIndex];
+    const points = anchors[minDiffIndex];
+    return points;
 }
 
 //---------------------------------------------
 // ログについての処理
+// ただのconsoleはデバッグで済ませること
 //---------------------------------------------
 /**
  * @method addLog ログ追加メソッド
@@ -306,9 +294,7 @@ function decideCrossPoint(
  */
 function addLog(info: string, value: string, logText: string): string {
     // TODO : もう少しログを簡易的に記載させたい
-    // あえて参照に
     var text = logText.concat("\n", info, "\n", value);
-    logText = text;
     return text;
 }
 
@@ -360,12 +346,7 @@ function generate() {
             return addLog("----------ERROR----------", "1点か点なし", log);
         }
 
-        const crossPointResult: {
-            cp: [number, number];
-            points: [number, number][];
-            log: string;
-        } = decideCrossPoint([paths[0], paths[1]], log);
-        log = crossPointResult.log;
+        const pathPointAnchors = decideCrossPoint([paths[0], paths[1]]);
 
         //@ts-ignore
         // type-for-adobe非対応
@@ -374,9 +355,7 @@ function generate() {
 
         // 交点1つのみの線を生成する
 
-        newPath.setEntirePath(crossPointResult.points);
-
-        log = addLog("★crosspoint", crossPoint.toString(), log);
+        newPath.setEntirePath(pathPointAnchors);
     } catch (error) {
         log = addLog("----------ERROR----------", error, log);
     }
@@ -387,4 +366,7 @@ function generate() {
     );
 }
 // デバッグ用
+/**
+ * @summary ExtendScript toolkit使用時は、コメントアウトする(またはjsx単体配布時)
+ */
 // generate();
