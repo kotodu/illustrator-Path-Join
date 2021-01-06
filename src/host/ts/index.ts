@@ -94,45 +94,6 @@ function isCrossPointOnLine(
     return Math.abs(cp2end0Distance + cp2end1Distance - endsDistance) < 1;
 }
 
-/**
- * @method getLineEnds 線端を算出する
- * @param path1
- * @param path2
- * @returns
- */
-function getLineEnds(
-    path1: PathItem,
-    path2: PathItem
-): [PathPoint, PathPoint][] {
-    const pi1length: number = path1.pathPoints.length;
-    const pi2length: number = path2.pathPoints.length;
-
-    // 始点・終点とその1つ隣が線端
-    const p1: PathPoint = path1.pathPoints[0];
-    const p2: PathPoint = path1.pathPoints[pi1length - 1];
-    const p3: PathPoint = path2.pathPoints[0];
-    const p4: PathPoint = path2.pathPoints[pi2length - 1];
-    const p1next: PathPoint = path1.pathPoints[1];
-    const p2next: PathPoint = path1.pathPoints[pi1length - 2];
-    const p3next: PathPoint = path2.pathPoints[1];
-    const p4next: PathPoint = path2.pathPoints[pi2length - 2];
-
-    // 始点・終点とその1つ隣が線端
-    const p1_p1next: [PathPoint, PathPoint] = [p1, p1next];
-    const p2_p2next: [PathPoint, PathPoint] = [p2, p2next];
-    const p3_p3next: [PathPoint, PathPoint] = [p3, p3next];
-    const p4_p4next: [PathPoint, PathPoint] = [p4, p4next];
-
-    // 線端
-    const lineEnds: [PathPoint, PathPoint][] = [
-        p1_p1next,
-        p2_p2next,
-        p3_p3next,
-        p4_p4next,
-    ];
-    return lineEnds;
-}
-
 function reverse(array: Array<any>): Array<any> {
     let newArray = [];
     for (let i = array.length - 1; i >= 0; i--) {
@@ -310,8 +271,7 @@ function generate() {
      */
     let log = "";
 
-    // @ts-ignore
-    // type-for-adobeでは対応していないプロパティの模様
+    // ! : type-for-adobeでは対応していない
     const selections: any[] | null = app.activeDocument.selection;
 
     // nullの場合は戻す
@@ -334,22 +294,19 @@ function generate() {
         // pathItemが2個ではないなら戻す
         // 将来的には仕様を変更するかもしれない
         if (paths.length !== 2) {
-            return addLog(
-                "----------ERROR----------",
-                "パスが2個ではない",
-                log
-            );
+            const info = `[${new Date().toLocaleTimeString()}] - ERROR`;
+            return addLog(info, "パスは2つ選択してください", log);
         }
 
         // pathPointで1点か点なしはさすがにNG
         if (paths[0].pathPoints.length < 2 && paths[1].pathPoints.length < 2) {
-            return addLog("----------ERROR----------", "1点か点なし", log);
+            const info = `[${new Date().toLocaleTimeString()}] - ERROR`;
+            return addLog(info, "パスが想定外です", log);
         }
 
         const pathPointAnchors = decideCrossPoint([paths[0], paths[1]]);
 
-        //@ts-ignore
-        // type-for-adobe非対応
+        // ! : type-for-adobe非対応
         const newPath: PathItem = paths[1].duplicate();
         newPath.stroked = true;
 
@@ -357,16 +314,14 @@ function generate() {
 
         newPath.setEntirePath(pathPointAnchors);
     } catch (error) {
-        log = addLog("----------ERROR----------", error, log);
+        const info = `[${new Date().toLocaleTimeString()}] - ERROR`;
+        return addLog(info, error, log);
     }
-    return addLog(
-        "----------正常終了----------",
-        new Date().toLocaleTimeString(),
-        log
-    );
+    const info = `[${new Date().toLocaleTimeString()}] - SUCCESS`;
+    return addLog(info, new Date().toLocaleTimeString(), log);
 }
 // デバッグ用
 /**
  * @summary ExtendScript toolkit使用時は、コメントアウトする(またはjsx単体配布時)
  */
-// generate();
+generate();
