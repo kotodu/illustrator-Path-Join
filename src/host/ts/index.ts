@@ -10,7 +10,7 @@
 // 線分AB,CDのペアA(x1,y1),B(x2,y2),C(x3,y3),D(x4,y4)
 // P1,P2,P3で、P1P2とP2P3を仮オフセットした線分AB,CDからその交点を算出したい
 /**
- * @method「crossPoint」交点算出
+ * @method crossPoint 交点算出
  * @param {number} x1
  * @param {number} y1
  * @param {number} x2
@@ -49,7 +49,7 @@ function crossPoint(
 
 //---------------------------------------------
 /**
- * @method 2点間の距離を返す
+ * @method diffPoints 2点間の距離を返す
  * @param {number} x1
  * @param {number} y1
  * @param {number} x2
@@ -94,6 +94,12 @@ function isCrossPointOnLine(
     return Math.abs(cp2end0Distance + cp2end1Distance - endsDistance) < 1;
 }
 
+/**
+ * @method reverse 配列を反転させる
+ * @param {Array} array 何かの配列
+ * @returns {Array} 反転した配列
+ * @description 既定であるけどExtendScriptは対応してないかも
+ */
 function reverse(array: Array<any>): Array<any> {
     let newArray = [];
     for (let i = array.length - 1; i >= 0; i--) {
@@ -103,19 +109,12 @@ function reverse(array: Array<any>): Array<any> {
 }
 
 /**
- * @method getLineEnd 要素indexをもとに線端を取得する
- * @param path
- * @param endIndex
+ * @method getNextPoint 線端の次の点を返す
+ * @param {PathPoint[]} pathPoints
+ * @param {number} endIndex
+ * @returns {PathPoint}
+ * @description 始点ならその次、終点ならその前
  */
-function getLineEnd(path: PathItem, endIndex: number) {
-    // endIndexが0なら0と1、そうでなければindex-1とindex
-    if (endIndex === 0) {
-        return [path.pathPoints[0], path.pathPoints[1]];
-    } else {
-        return [path.pathPoints[endIndex - 1], path.pathPoints[endIndex]];
-    }
-}
-
 function getNextPoint(pathPoints: PathPoint[], endIndex: number): PathPoint {
     if (endIndex === 0) {
         return pathPoints[1];
@@ -125,10 +124,11 @@ function getNextPoint(pathPoints: PathPoint[], endIndex: number): PathPoint {
 }
 
 /**
- * パス2つを元に、交点を決定する
- * @param path
+ * @method decideAnchors パス2つを元に、新しいパスの点配列を決定する
+ * @param {[PathItem, PathItem]} path パス2つ
+ * @returns {[number,number][]} アンカーのピクセル座標[x,y]の配列
  */
-function decideCrossPoint(path: [PathItem, PathItem]): [number, number][] {
+function decideAnchors(path: [PathItem, PathItem]): [number, number][] {
     // 4パターンの結合方法[path1結合位置、path2結合位置]
     const joinIndexOptions = [
         [0, 0],
@@ -272,6 +272,7 @@ function generate() {
     let log = "";
 
     // ! : type-for-adobeでは対応していない
+    // @ts-ignore
     const selections: any[] | null = app.activeDocument.selection;
 
     // nullの場合は戻す
@@ -304,9 +305,10 @@ function generate() {
             return addLog(info, "パスが想定外です", log);
         }
 
-        const pathPointAnchors = decideCrossPoint([paths[0], paths[1]]);
+        const pathPointAnchors = decideAnchors([paths[0], paths[1]]);
 
         // ! : type-for-adobe非対応
+        // @ts-ignore
         const newPath: PathItem = paths[1].duplicate();
         newPath.stroked = true;
 
@@ -324,4 +326,4 @@ function generate() {
 /**
  * @summary ExtendScript toolkit使用時は、コメントアウトする(またはjsx単体配布時)
  */
-generate();
+// generate();
