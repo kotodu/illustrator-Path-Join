@@ -38,8 +38,8 @@
           <Geometry>
             <Size>
               <!-- 7) -->
-              <Height>200</Height>
-              <Width>200</Width>
+              <Height>150</Height>
+              <Width>250</Width>
             </Size>
           </Geometry>
           <Icons />

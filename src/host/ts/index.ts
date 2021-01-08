@@ -320,7 +320,7 @@ function generate() {
         return addLog(info, error, log);
     }
     const info = `[${new Date().toLocaleTimeString()}] - SUCCESS`;
-    return addLog(info, new Date().toLocaleTimeString(), log);
+    return addLog(info, "パスは作成されました", log);
 }
 // デバッグ用
 /**

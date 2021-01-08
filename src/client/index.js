@@ -6,6 +6,6 @@ openButton.addEventListener("click", join);
 //---------------------------------------------
 function join() {
     csi.evalScript("generate()", (log) => {
-        document.getElementById("ta").value = log;
+        document.getElementById("log").innerText = log;
     })
 }
