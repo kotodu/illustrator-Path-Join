@@ -1,6 +1,6 @@
 {
   "name": "illustrator-path-join",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An extension to join paths on Adobe illustrator CC.",
   "scripts": {
     "clean": "powershell .\\clean.ps1 && npm run check",

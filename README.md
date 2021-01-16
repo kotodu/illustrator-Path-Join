@@ -5,9 +5,11 @@
 
 ![icon](./docs/ipj-icon1x.png)
 
+<blockquote class="twitter-tweet"><p lang="ja" dir="ltr">ボタン1つで簡単に結合できる優れものです(自称)<br>色々今後も改良したいですね～ <a href="https://t.co/JRzH2Bbv8A">https://t.co/JRzH2Bbv8A</a> <a href="https://t.co/UrtebNjhgD">pic.twitter.com/UrtebNjhgD</a></p>&mdash; ことづ (@kotodu) <a href="https://twitter.com/kotodu/status/1348458699547836422?ref_src=twsrc%5Etfw">January 11, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 ## 最新版のダウンロード
-- ver0.1.0 - zxp
-    - [./release/ipj_0.1.0.zxp](./release/ipj_0.1.0.zxp)
+- ver0.1.1 - zxp
+    - [./release/ipj_0.1.1.zxp](./release/ipj_0.1.1.zxp)
 
 - バージョン履歴は、[CHANGELOG.md](./CHANGELOG.md)を参照のこと
 
