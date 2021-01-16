@@ -255,7 +255,7 @@ function decideAnchors(path: [PathItem, PathItem]): [number, number][] {
  */
 function addLog(info: string, value: string, logText: string): string {
     // TODO : もう少しログを簡易的に記載させたい
-    var text = logText.concat("\n", info, "\n", value);
+    const text = logText.concat("\n", info, "\n", value);
     return text;
 }
 
@@ -309,7 +309,7 @@ function generate() {
 
         // ! : type-for-adobe非対応
         // @ts-ignore
-        const newPath: PathItem = paths[1].duplicate();
+        const newPath: PathItem = paths[0].duplicate();
         newPath.stroked = true;
 
         // 交点1つのみの線を生成する

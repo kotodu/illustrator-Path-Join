@@ -5,9 +5,12 @@
 
 ![icon](./docs/ipj-icon1x.png)
 
+## サンプル動画
+![demo.gif](./docs/ipj-demo.gif)
+
 ## 最新版のダウンロード
-- ver0.1.0 - zxp
-    - [./release/ipj_0.1.0.zxp](./release/ipj_0.1.0.zxp)
+- ver0.1.1 - zxp
+    - [./release/ipj_0.1.1.zxp](./release/ipj_0.1.1.zxp)
 
 - バージョン履歴は、[CHANGELOG.md](./CHANGELOG.md)を参照のこと
 
